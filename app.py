@@ -3,6 +3,14 @@ import os
 import zipfile
 from io import BytesIO
 from PIL import Image 
+import threading
+import time
+import shutil
+
+def delayed_cleanup_files(folder_paths, delay=60):
+    time.sleep(delay)
+    for folder in folder_paths:
+        delete_files_in_directory(folder)
 
 app = Flask(__name__)
 
@@ -101,6 +109,11 @@ def download_files():
 
     # delete_files_in_directory("./downloaded_folder")
     # delete_files_in_directory("./uploaded_folder")
+    # Start cleanup thread after returning the file
+
+    # in your route
+    threading.Thread(target=delayed_cleanup_files, args=(["./downloaded_folder", "./uploaded_folder"],)).start()
+
 
     return send_file(
         memory_file,
@@ -114,8 +127,6 @@ def download_files():
 
 @app.route("/")
 def home():
-    delete_files_in_directory("./downloaded_folder")
-    delete_files_in_directory("./uploaded_folder")
     return render_template("index.html")
 
 if __name__ == "__main__":
